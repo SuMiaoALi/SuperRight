@@ -8,6 +8,11 @@ EXT_ID="com.cola.SuperRight.FinderExt"
 APP_SRC="build/Build/Products/Debug/SuperRight.app"
 APP_DST="/Applications/SuperRight.app"
 
+if [ ! -f Local.xcconfig ]; then
+  echo "✗ 缺少 Local.xcconfig。请先：cp Local.xcconfig.example Local.xcconfig 并填入你的 Team ID（见 README）。"
+  exit 1
+fi
+
 echo "▶ 1/6 生成工程 (xcodegen)"
 xcodegen generate >/dev/null
 

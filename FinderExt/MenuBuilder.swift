@@ -3,19 +3,19 @@ import AppKit
 import FinderSync
 
 /// 按右键场景 + 配置生成 NSMenu。
-/// 菜单项的 representedObject 承载意图：URL 表示"打开 superright:// 交给主程序"，
-/// String 表示"就地复制到剪贴板"。target/action 由扩展注入。
+/// FinderSync 会丢弃菜单项的 representedObject，故用 tag 标识：每个菜单项注册一个动作拿到
+/// 唯一 tag，点击时扩展按 tag 查表。所有项共用同一个 action selector。
 final class MenuBuilder {
     let config: Config
     let target: AnyObject
-    let openAction: Selector   // 处理 URL 项
-    let copyAction: Selector   // 处理复制项
+    let action: Selector
+    let register: (MenuAction) -> Int   // 注册动作，返回该项的 tag
 
-    init(config: Config, target: AnyObject, openAction: Selector, copyAction: Selector) {
+    init(config: Config, target: AnyObject, action: Selector, register: @escaping (MenuAction) -> Int) {
         self.config = config
         self.target = target
-        self.openAction = openAction
-        self.copyAction = copyAction
+        self.action = action
+        self.register = register
     }
 
     func menu(for kind: FIMenuKind, selected: [URL], targetDir: URL?) -> NSMenu {
@@ -117,16 +117,16 @@ final class MenuBuilder {
     }
 
     private func openItem(_ title: String, url: URL) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: openAction, keyEquivalent: "")
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
         item.target = target
-        item.representedObject = url
+        item.tag = register(.open(url))
         return item
     }
 
     private func copyItem(_ title: String, text: String) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: copyAction, keyEquivalent: "")
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
         item.target = target
-        item.representedObject = text
+        item.tag = register(.copy(text))
         return item
     }
 }

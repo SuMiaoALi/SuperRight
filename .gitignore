@@ -8,3 +8,6 @@ xcuserdata/
 
 # XcodeGen 生成物
 SuperRight.xcodeproj/
+
+# 本地签名信息（每人自己的 Team ID），不入库
+Local.xcconfig

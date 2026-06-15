@@ -1,0 +1,9 @@
+// 复制本文件为 Local.xcconfig，填入你自己的 Apple Development Team ID。
+// 重要：这里要填的是 provisioning profile 里的 TeamIdentifier，
+//      不是证书名括号里的那串（那是证书 OU，两者不同！）。
+// 查 Team ID：
+//   先在 Xcode 里给 SuperRight 和 FinderExt 两个 target 各选一次你的 (Personal Team)，
+//   生成 profile 后执行：
+//   security cms -D -i ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*.provisionprofile \
+//     | plutil -extract TeamIdentifier.0 raw -
+DEVELOPMENT_TEAM = YOUR_TEAM_ID

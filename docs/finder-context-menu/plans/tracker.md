@@ -13,7 +13,7 @@
 - ✅ 扩展注册 `/`，菜单代码就位（Finder 实际渲染待人工验证，见阶段 2）
 - ✅ 扩展点击 → `superright://` → 主程序收到并执行（IPC 打通，app 侧已端到端验证）
 - ✅ App Group 在免费个人 team 下可用（config.json 成功写入共享容器，兜底方案不需要）
-- ✅ 签名打通（root cause：team id 用错；正确 `7T3GCLP6RW`，见 runbook）
+- ✅ 签名打通（root cause：team id 用错——应取 profile 的 TeamIdentifier 而非证书 OU，见 runbook）
 
 ### 阶段 1 — 共享纯逻辑（TDD） ✅
 - ✅ `Config` model + loader、`PathUtils`、`FileName` 重名加序号、`ActionURL` 编解码
@@ -23,7 +23,7 @@
 - ✅ `MenuBuilder`：按 menuKind + config 生成 NSMenu（新建/打开/跳转/复制/移动复制到/用App打开）
 - ✅ 复制路径 / 复制名称（扩展内直接写剪贴板）
 - ✅ 其余动作编码为 superright:// URL 并 open
-- 🟡 **Finder 右键菜单实际渲染待人工验证**（脚本无法触发 Finder 上下文菜单）
+- ✅ **Finder 右键菜单已人工验证通过**（2026-06-15）。修复关键坑：FinderSync 会丢弃菜单项 `representedObject`，改用 `tag` 查表派发。
 
 ### 阶段 3 — 主程序动作执行 ✅
 - ✅ `CommandHandler` URL 解码分发
@@ -41,8 +41,8 @@
 图形设置界面、Office 模板、文件夹图标、工具箱等。
 
 ## 下一步动作
-→ **唯一待办：用户在 Finder 里右键人工验证菜单**（空白处 + 选中文件）。通过即 MVP 闭环。
-→ 之后可选：面向用户的 README、图形设置界面、Office 模板等（阶段 5）。
+→ **MVP 闭环完成**：5 类功能 Finder 实测可用，已开源到 GitHub（Apache-2.0）。
+→ 可选后续：图形设置界面、Office 模板、文件夹图标、登录自启（LaunchAgent）等（阶段 5）。
 
 ## 决策记录
 - 2026-06-13：选 FinderSync 而非 Services/Quick Actions，因核心功能是动态列表，Services 难做。

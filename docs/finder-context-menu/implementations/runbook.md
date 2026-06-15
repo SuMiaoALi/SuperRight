@@ -6,9 +6,10 @@
 - 完整 Xcode（非仅 CLT）：`sudo xcode-select -s /Applications/Xcode.app`
 - Xcode 登录 Apple ID（免费个人即可），生成 Personal Team
 - 工具：`brew install xcodegen`
-- **Team ID 易错点**：用于签名的 Team ID 是 **provisioning profile 里的 TeamIdentifier**（本项目 `7T3GCLP6RW`），不是证书名括号里的 `6PSGXDQ9B5`（那是证书 OU）。
+- **Team ID 易错点**：用于签名的 Team ID 是 **provisioning profile 里的 TeamIdentifier**，**不是**证书名括号里那串（那是证书 OU，两者不同）。
   查 team：`security cms -D -i <profile> | plutil -extract TeamIdentifier.0 raw -`
   profile 在 `~/Library/Developer/Xcode/UserData/Provisioning Profiles/`。
+  把查到的值填进 `Local.xcconfig` 的 `DEVELOPMENT_TEAM`（该文件不入库）。
 
 ## 构建 + 安装（日常迭代）
 一条命令：

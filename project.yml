@@ -5,10 +5,15 @@ options:
   bundleIdPrefix: com.cola
   createIntermediateGroups: true
 
+# 签名信息（DEVELOPMENT_TEAM）放在本地、不入库的 Local.xcconfig。
+# 首次构建：cp Local.xcconfig.example Local.xcconfig，填入自己的 Team ID。
+configFiles:
+  Debug: Local.xcconfig
+  Release: Local.xcconfig
+
 settings:
   base:
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: 7T3GCLP6RW
     SWIFT_VERSION: "5.0"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
