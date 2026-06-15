@@ -35,6 +35,22 @@ enum FileOps {
         return url
     }
 
+    /// 把模板文件拷到 dir，按模板名取名，冲突加序号。返回新文件 URL。
+    @discardableResult
+    static func newFromTemplate(_ templatePath: String, inDir dir: String) throws -> URL {
+        let tmplName = (templatePath as NSString).lastPathComponent
+        let base = (tmplName as NSString).deletingPathExtension
+        let ext = (tmplName as NSString).pathExtension
+        let name = FileName.unique(base: base, ext: ext, existing: existingNames(inDir: dir))
+        let dst = URL(fileURLWithPath: dir).appendingPathComponent(name)
+        do {
+            try fm.copyItem(atPath: templatePath, toPath: dst.path)
+        } catch {
+            throw FileOpsError.cannotCreate(error.localizedDescription)
+        }
+        return dst
+    }
+
     /// 把多个文件移动/复制到 destDir，每个名字冲突时加序号。返回新位置 URL 列表。
     @discardableResult
     static func transfer(_ srcPaths: [String], toDir destDir: String, move: Bool) throws -> [URL] {

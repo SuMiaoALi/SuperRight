@@ -38,35 +38,54 @@ final class MenuBuilder {
         let dirPath = dir.path
 
         // 新建文件 ▸
-        let newFile = submenu("新建文件")
-        for t in config.newFileTypes {
-            let url = ActionURL.encode(.init(action: .newFile, dir: dirPath, ext: t.ext))
-            newFile.addItem(openItem("\(t.name)  (.\(t.ext))", url: url))
+        if config.features.newFile {
+            let newFile = submenu("新建文件")
+            for t in config.newFileTypes {
+                let url = ActionURL.encode(.init(action: .newFile, dir: dirPath, ext: t.ext))
+                newFile.addItem(openItem("\(t.name)  (.\(t.ext))", url: url))
+            }
+            let templates = TemplateStore.list()
+            if !templates.isEmpty {
+                newFile.addItem(.separator())
+                for t in templates {
+                    let url = ActionURL.encode(.init(action: .newFromTemplate, dir: dirPath, templatePath: t.path))
+                    newFile.addItem(openItem("\(t.name)  (.\(t.ext))", url: url))
+                }
+            }
+            newFile.addItem(.separator())
+            let customURL = ActionURL.encode(.init(action: .newFile, dir: dirPath, custom: true))
+            newFile.addItem(openItem("自定义名称…", url: customURL))
+            menu.addItem(parent("新建文件", submenu: newFile))
         }
-        newFile.addItem(.separator())
-        let customURL = ActionURL.encode(.init(action: .newFile, dir: dirPath, custom: true))
-        newFile.addItem(openItem("自定义名称…", url: customURL))
-        menu.addItem(parent("新建文件", submenu: newFile))
 
         // 在此打开 ▸（用 App 打开当前目录）
-        let openHere = submenu("在此打开")
-        for app in config.openApps {
-            let url = ActionURL.encode(.init(action: .openDirWith, dir: dirPath,
-                                             appBundleId: app.bundleId, appPath: app.path))
-            openHere.addItem(openItem(app.name, url: url))
+        if config.features.openWith {
+            let openHere = submenu("在此打开")
+            for app in config.openApps {
+                let url = ActionURL.encode(.init(action: .openDirWith, dir: dirPath,
+                                                 appBundleId: app.bundleId, appPath: app.path))
+                openHere.addItem(openItem(app.name, url: url))
+            }
+            menu.addItem(parent("在此打开", submenu: openHere))
         }
-        menu.addItem(parent("在此打开", submenu: openHere))
 
         // 跳转到 ▸（常用目录）
-        let jump = submenu("跳转到")
-        for d in config.favoriteDirs {
-            let url = ActionURL.encode(.init(action: .revealDir, dir: d.path))
-            jump.addItem(openItem(d.name, url: url))
+        if config.features.favorites {
+            let jump = submenu("跳转到")
+            for d in config.favoriteDirs {
+                let url = ActionURL.encode(.init(action: .revealDir, dir: d.path))
+                jump.addItem(openItem(d.name, url: url))
+            }
+            menu.addItem(parent("跳转到", submenu: jump))
         }
-        menu.addItem(parent("跳转到", submenu: jump))
 
         menu.addItem(.separator())
         menu.addItem(copyItem("复制当前路径", text: dirPath))
+
+        if config.features.toolbox {
+            menu.addItem(openItem("粘贴到此", url: ActionURL.encode(.init(action: .pasteHere, dir: dirPath))))
+            menu.addItem(openItem("显示/隐藏 隐藏文件", url: ActionURL.encode(.init(action: .toggleHidden))))
+        }
     }
 
     // MARK: - 选中文件
@@ -80,30 +99,74 @@ final class MenuBuilder {
         menu.addItem(copyItem("复制名称", text: PathUtils.joinForClipboard(names)))
         menu.addItem(.separator())
 
-        // 移动到 ▸
-        let moveTo = submenu("移动到")
-        for t in config.sendTargets {
-            let url = ActionURL.encode(.init(action: .moveTo, paths: paths, dest: t.path))
-            moveTo.addItem(openItem(t.name, url: url))
-        }
-        menu.addItem(parent("移动到", submenu: moveTo))
+        // 移动到 / 复制到 ▸
+        if config.features.transfer {
+            let moveTo = submenu("移动到")
+            for t in config.sendTargets {
+                let url = ActionURL.encode(.init(action: .moveTo, paths: paths, dest: t.path))
+                moveTo.addItem(openItem(t.name, url: url))
+            }
+            menu.addItem(parent("移动到", submenu: moveTo))
 
-        // 复制到 ▸
-        let copyTo = submenu("复制到")
-        for t in config.sendTargets {
-            let url = ActionURL.encode(.init(action: .copyTo, paths: paths, dest: t.path))
-            copyTo.addItem(openItem(t.name, url: url))
+            let copyTo = submenu("复制到")
+            for t in config.sendTargets {
+                let url = ActionURL.encode(.init(action: .copyTo, paths: paths, dest: t.path))
+                copyTo.addItem(openItem(t.name, url: url))
+            }
+            menu.addItem(parent("复制到", submenu: copyTo))
         }
-        menu.addItem(parent("复制到", submenu: copyTo))
 
         // 用 App 打开 ▸
-        let openWith = submenu("用 App 打开")
-        for app in config.openApps {
-            let url = ActionURL.encode(.init(action: .openWith, paths: paths,
-                                             appBundleId: app.bundleId, appPath: app.path))
-            openWith.addItem(openItem(app.name, url: url))
+        if config.features.openWith {
+            let openWith = submenu("用 App 打开")
+            for app in config.openApps {
+                let url = ActionURL.encode(.init(action: .openWith, paths: paths,
+                                                 appBundleId: app.bundleId, appPath: app.path))
+                openWith.addItem(openItem(app.name, url: url))
+            }
+            menu.addItem(parent("用 App 打开", submenu: openWith))
         }
-        menu.addItem(parent("用 App 打开", submenu: openWith))
+
+        // 文件夹图标 ▸
+        if config.features.icon {
+            let icon = submenu("文件夹图标")
+            let colors = submenu("换颜色")
+            for c in config.folderColors {
+                let url = ActionURL.encode(.init(action: .setFolderColor, paths: paths, hex: c.hex))
+                colors.addItem(openItem(c.name, url: url))
+            }
+            icon.addItem(parent("换颜色", submenu: colors))
+            icon.addItem(openItem("设置自定义图标…", url: ActionURL.encode(.init(action: .setCustomIcon, paths: paths))))
+            icon.addItem(openItem("拷贝图标", url: ActionURL.encode(.init(action: .copyIcon, paths: paths))))
+            icon.addItem(openItem("粘贴图标", url: ActionURL.encode(.init(action: .pasteIcon, paths: paths))))
+            icon.addItem(openItem("清除自定义图标", url: ActionURL.encode(.init(action: .clearIcon, paths: paths))))
+            menu.addItem(parent("文件夹图标", submenu: icon))
+        }
+
+        // 工具箱 ▸
+        if config.features.toolbox {
+            let tb = submenu("工具箱")
+            tb.addItem(openItem("剪切", url: ActionURL.encode(.init(action: .markCut, paths: paths))))
+            tb.addItem(openItem("拷贝", url: ActionURL.encode(.init(action: .markCopy, paths: paths))))
+            tb.addItem(.separator())
+            tb.addItem(openItem("压缩为 ZIP", url: ActionURL.encode(.init(action: .zip, paths: paths))))
+            tb.addItem(openItem("解压", url: ActionURL.encode(.init(action: .unzip, paths: paths))))
+            let conv = submenu("转换图片为")
+            for f in ImageFormat.allCases {
+                conv.addItem(openItem(f.displayName, url: ActionURL.encode(.init(action: .convertImage, paths: paths, fmt: f.rawValue))))
+            }
+            tb.addItem(parent("转换图片为", submenu: conv))
+            tb.addItem(openItem("生成二维码", url: ActionURL.encode(.init(action: .qrcode, paths: paths))))
+            tb.addItem(.separator())
+            tb.addItem(openItem("文件信息", url: ActionURL.encode(.init(action: .fileInfo, paths: paths))))
+            tb.addItem(openItem("创建替身", url: ActionURL.encode(.init(action: .makeAlias, paths: paths))))
+            tb.addItem(openItem("创建符号链接", url: ActionURL.encode(.init(action: .makeSymlink, paths: paths))))
+            tb.addItem(openItem("批量重命名…", url: ActionURL.encode(.init(action: .batchRename, paths: paths))))
+            tb.addItem(.separator())
+            tb.addItem(openItem("显示/隐藏 隐藏文件", url: ActionURL.encode(.init(action: .toggleHidden))))
+            tb.addItem(openItem("永久删除…", url: ActionURL.encode(.init(action: .deletePermanently, paths: paths))))
+            menu.addItem(parent("工具箱", submenu: tb))
+        }
     }
 
     // MARK: - 构造辅助
