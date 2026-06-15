@@ -23,6 +23,7 @@ final class StatusBarController {
         menu.addItem(title)
         menu.addItem(.separator())
 
+        menu.addItem(item("设置…", #selector(openSettings), key: ","))
         menu.addItem(item("打开配置文件", #selector(openConfig)))
         menu.addItem(item("在 Finder 中显示配置", #selector(revealConfig)))
         menu.addItem(.separator())
@@ -42,6 +43,10 @@ final class StatusBarController {
         i.target = self
         i.isEnabled = true
         return i
+    }
+
+    @objc private func openSettings() {
+        SettingsWindowController.shared.show()
     }
 
     @objc private func openConfig() {

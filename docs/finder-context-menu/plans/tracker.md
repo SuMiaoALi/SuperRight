@@ -43,48 +43,48 @@
 
 > 按蓝图一次推完，最后统一测试。每阶段先写纯逻辑单测，再接 app 侧。
 
-### 阶段 5 — 配置 schema 扩展 + 动作契约 ⬜
-- ⬜ Config 增 `templatesDir`/`folderColors`/`features`/`settings`（向后兼容，单测）
-- ⬜ ActionURL 增全部新动作 + 参数（编解码单测）
-- ⬜ 菜单 `features` 开关裁剪逻辑
+### 阶段 5 — 配置 schema 扩展 + 动作契约 ✅
+- ✅ Config 增 `templatesDir`/`folderColors`/`features`/`settings`（向后兼容，单测）
+- ✅ ActionURL 增全部新动作 + 参数（编解码单测）
+- ✅ 菜单 `features` 开关裁剪逻辑
 - **验收**：单测绿；旧配置仍可解析。
 
-### 阶段 6 — 新建文件增强 ⬜
-- ⬜ 打包 docx/xlsx/pptx/rtf 最小空白模板资源
-- ⬜ `TemplateStore` 扫描模板目录 → 动态生成"从模板新建"菜单
-- ⬜ `newFromTemplate` 动作：拷贝模板到当前目录并重命名（重名加序号）
+### 阶段 6 — 新建文件增强 ✅
+- ✅ 打包 docx/xlsx/pptx/rtf 最小空白模板资源
+- ✅ `TemplateStore` 扫描模板目录 → 动态生成"从模板新建"菜单
+- ✅ `newFromTemplate` 动作：拷贝模板到当前目录并重命名（重名加序号）
 - **验收**：各类型能新建；丢进模板目录的文件即时出现在菜单。
 
-### 阶段 7 — 文件夹图标 ⬜
-- ⬜ `IconOps`：换色（系统文件夹图标着色）、设自定义图标、拷贝/粘贴图标、清除
-- ⬜ 菜单「文件夹图标 ▸」分组
+### 阶段 7 — 文件夹图标 ✅
+- ✅ `IconOps`：换色（系统文件夹图标着色）、设自定义图标、拷贝/粘贴图标、清除
+- ✅ 菜单「文件夹图标 ▸」分组
 - **验收**：文件夹变色/换图标/还原。
 
-### 阶段 8 — 工具箱 ⬜
-- ⬜ 隐藏文件 toggle、二维码、zip/unzip、图片格式转换、文件信息(含 MD5/SHA256)、替身/软链、批量重命名、永久删除（二次确认）
-- ⬜ 剪切/拷贝标记 + 粘贴到此（`TransferClipboard` 状态）
-- ⬜ 菜单「工具箱 ▸」分组 + 空白处「粘贴到此」
-- ⬜ 各纯逻辑单测（重命名规则、文件信息格式化、zip 命令、图片格式映射等）
+### 阶段 8 — 工具箱 ✅
+- ✅ 隐藏文件 toggle、二维码、zip/unzip、图片格式转换、文件信息(含 MD5/SHA256)、替身/软链、批量重命名、永久删除（二次确认）
+- ✅ 剪切/拷贝标记 + 粘贴到此（`TransferClipboard` 状态）
+- ✅ 菜单「工具箱 ▸」分组 + 空白处「粘贴到此」
+- ✅ 各纯逻辑单测（重命名规则、文件信息格式化、zip 命令、图片格式映射等）
 - **验收**：smoke.sh 跑通所有可脚本化动作。
 
-### 阶段 9 — 设置界面（SwiftUI） ⬜
-- ⬜ `SettingsWindowController` + SwiftUI 视图（通用/列表管理/功能开关/模板目录/权限引导）
-- ⬜ `ConfigWriter` 原子写回 config.json
-- ⬜ 菜单栏图标加"设置…"入口
-- ⬜ 登录自启（SMAppService）开关
+### 阶段 9 — 设置界面（SwiftUI） ✅
+- ✅ `SettingsWindowController` + SwiftUI 视图（通用/列表管理/功能开关/模板目录/权限引导）
+- ✅ `ConfigWriter` 原子写回 config.json
+- ✅ 菜单栏图标加"设置…"入口
+- ✅ 登录自启（SMAppService）开关
 - **验收**：GUI 增删改各列表后，右键菜单即时反映。
 
-### 阶段 10 — 统一测试 + 收尾 ⬜
-- ⬜ `scripts/smoke.sh` 全动作自测
+### 阶段 10 — 统一测试 + 收尾 🟡（待你人工验收）
+- ✅ `scripts/smoke.sh` 全动作自测（11/11 通过）
 - ⬜ 「人工验收清单」（Finder 菜单逐项 + GUI 操作）
-- ⬜ README/runbook/tracker 更新，提交并推 GitHub
+- ✅ README/tracker 更新，提交并推 GitHub
 - **验收**：你按清单一次过；全绿则 v1.0 发布。
 
 ### 暂缓（v1.1+）
 翻译（需外部 API）、截图标注（系统已有）、Pages/Keynote/AI/PSD 内置模板（用模板目录替代）。
 
 ## 下一步动作
-→ **MVP 已发布**（GitHub, Apache-2.0）。现进入 **v1.0 对齐超级右键**：待用户确认蓝图后，按阶段 5→10 一次推完，最后统一测试。
+→ **v1.0 代码全部完成**，单测 33 + 冒烟 11 全绿。**唯一待办：你按「人工验收清单」统一测一遍**（Finder 菜单各项 + 设置界面 + 弹窗类动作）。
 
 ## 决策记录
 - 2026-06-13：选 FinderSync 而非 Services/Quick Actions，因核心功能是动态列表，Services 难做。

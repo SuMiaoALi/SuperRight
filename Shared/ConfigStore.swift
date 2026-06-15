@@ -29,6 +29,14 @@ enum ConfigStore {
         return cfg
     }
 
+    /// 原子写回配置（设置界面用）。
+    static func save(_ config: Config) {
+        guard let url = configURL else { return }
+        try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
+                                                 withIntermediateDirectories: true)
+        try? config.encoded().write(to: url, options: .atomic)
+    }
+
     /// 首次启动写默认配置（已存在则不动）。返回是否写入。
     @discardableResult
     static func writeDefaultIfNeeded() -> Bool {

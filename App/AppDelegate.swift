@@ -10,8 +10,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ConfigStore.writeDefaultIfNeeded()
         // 播种内置模板到 App Group（供扩展读取）。
         TemplateStore.seedBuiltins(from: .main)
-        // 菜单栏图标（重启 / 配置 / 退出 入口）。
-        statusBar = StatusBarController()
+        let config = ConfigStore.load()
+        // 菜单栏图标（重启 / 配置 / 设置 / 退出 入口）；可在设置里关闭。
+        if config.settings.menuBarIcon {
+            statusBar = StatusBarController()
+        }
+        // 应用登录自启设置。
+        LoginItem.set(config.settings.launchAtLogin)
     }
 
     /// 接收 superright:// 命令。
