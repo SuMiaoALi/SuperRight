@@ -1,0 +1,58 @@
+name: SuperRight
+options:
+  deploymentTarget:
+    macOS: "14.0"
+  bundleIdPrefix: com.cola
+  createIntermediateGroups: true
+
+settings:
+  base:
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 7T3GCLP6RW
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_HARDENED_RUNTIME: YES
+
+targets:
+  SuperRight:
+    type: application
+    platform: macOS
+    sources:
+      - App
+      - Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cola.SuperRight
+        PRODUCT_NAME: SuperRight
+        INFOPLIST_FILE: App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/SuperRight.entitlements
+        ENABLE_APP_SANDBOX: NO
+    dependencies:
+      - target: FinderExt
+        embed: true
+
+  FinderExt:
+    type: app-extension
+    platform: macOS
+    sources:
+      - FinderExt
+      - Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cola.SuperRight.FinderExt
+        PRODUCT_MODULE_NAME: FinderExt
+        INFOPLIST_FILE: FinderExt/Info.plist
+        CODE_SIGN_ENTITLEMENTS: FinderExt/FinderExt.entitlements
+    dependencies:
+      - sdk: FinderSync.framework
+
+  SharedTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/SharedTests
+      - Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cola.SuperRight.SharedTests

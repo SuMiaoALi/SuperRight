@@ -39,5 +39,16 @@
 ## 待验证清单（实现期逐条实测，更新本文件）
 - 🟡 注册 `/` 的可行性与权限要求
 - 🟡 沙盒扩展 `NSWorkspace.open` 自定义 scheme 是否成功路由到主程序
-- 🟡 免费 Apple ID 的 App Group 可用性（否则走兜底配置路径）
+- ✅ 免费 Apple ID 的 App Group 可用性 —— **可用**。个人 team（`6PSGXDQ9B5`）的 Xcode 自动签名接受 `group.com.cola.SuperRight`，App/扩展两端 App Groups 能力均无报错，兜底方案暂不需要。
 - 🟡 `contextualMenuForContainer` 在空白处右键的真实触发表现
+
+## 构建/签名实测结论（2026-06-15）
+- 环境：Xcode 26.5（完整版已装），macOS 26.5 SDK，免费个人 Apple ID（Aniya gg / yichuan890@gmail.com），Team `6PSGXDQ9B5`。
+- **App Group 在免费个人 team 下可用**（见上）。
+- **xcodebuild 纯命令行签名对个人 team 走不通**：
+  - 自动签名 + `-allowProvisioningUpdates` → `No Account for Team`（CLI 拿不到 Xcode GUI 存的账号会话）。
+  - 自动签名不带该 flag → `No profiles found`（不联网就不会用已建 profile）。
+  - 手动签名指定 specifier → `No profile matching`（CLI profile 查找路径不一致，复制到 `~/Library/MobileDevice/Provisioning Profiles/` 仍未匹配）。
+  - **结论**：构建走 Xcode GUI（`osascript` 驱动 `tell application "Xcode" to build`，已生效的签名上下文）。单测可继续用 `xcodebuild test ... CODE_SIGNING_ALLOWED=NO`。
+- **Provisioning profile 7 天到期**（个人 team 限制）：到期后在 Xcode 里重新构建一次即自动续期。位置 `~/Library/Developer/Xcode/UserData/Provisioning Profiles/`。
+- 工程用 XcodeGen 从 `project.yml` 生成；改 `project.yml` 后 `xcodegen generate` 重生成，签名设置（Automatic + DEVELOPMENT_TEAM）保留。
