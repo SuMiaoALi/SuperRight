@@ -1,6 +1,7 @@
 import Foundation
 import AppKit
 import FinderSync
+import UniformTypeIdentifiers
 
 /// 按右键场景 + 配置生成 NSMenu。
 /// FinderSync 会丢弃菜单项的 representedObject，故用 tag 标识：每个菜单项注册一个动作拿到
@@ -42,20 +43,20 @@ final class MenuBuilder {
             let newFile = submenu("新建文件")
             for t in config.newFileTypes {
                 let url = ActionURL.encode(.init(action: .newFile, dir: dirPath, ext: t.ext))
-                newFile.addItem(openItem("\(t.name)  (.\(t.ext))", url: url))
+                newFile.addItem(openItem("\(t.name)  (.\(t.ext))", url: url, image: Self.fileIcon(ext: t.ext)))
             }
             let templates = TemplateStore.list()
             if !templates.isEmpty {
                 newFile.addItem(.separator())
                 for t in templates {
                     let url = ActionURL.encode(.init(action: .newFromTemplate, dir: dirPath, templatePath: t.path))
-                    newFile.addItem(openItem("\(t.name)  (.\(t.ext))", url: url))
+                    newFile.addItem(openItem("\(t.name)  (.\(t.ext))", url: url, image: Self.fileIcon(ext: t.ext)))
                 }
             }
             newFile.addItem(.separator())
             let customURL = ActionURL.encode(.init(action: .newFile, dir: dirPath, custom: true))
-            newFile.addItem(openItem("自定义名称…", url: customURL))
-            menu.addItem(parent("新建文件", submenu: newFile))
+            newFile.addItem(openItem("自定义名称…", url: customURL, symbol: "pencil"))
+            menu.addItem(parent("新建文件", submenu: newFile, symbol: "doc.badge.plus"))
         }
 
         // 在此打开 ▸（用 App 打开当前目录）
@@ -64,9 +65,9 @@ final class MenuBuilder {
             for app in config.openApps {
                 let url = ActionURL.encode(.init(action: .openDirWith, dir: dirPath,
                                                  appBundleId: app.bundleId, appPath: app.path))
-                openHere.addItem(openItem(app.name, url: url))
+                openHere.addItem(openItem(app.name, url: url, image: Self.appIcon(bundleId: app.bundleId, path: app.path)))
             }
-            menu.addItem(parent("在此打开", submenu: openHere))
+            menu.addItem(parent("在此打开", submenu: openHere, symbol: "arrow.up.forward.app"))
         }
 
         // 跳转到 ▸（常用目录）
@@ -74,17 +75,17 @@ final class MenuBuilder {
             let jump = submenu("跳转到")
             for d in config.favoriteDirs {
                 let url = ActionURL.encode(.init(action: .revealDir, dir: d.path))
-                jump.addItem(openItem(d.name, url: url))
+                jump.addItem(openItem(d.name, url: url, image: Self.folderIcon()))
             }
-            menu.addItem(parent("跳转到", submenu: jump))
+            menu.addItem(parent("跳转到", submenu: jump, symbol: "folder"))
         }
 
         menu.addItem(.separator())
-        menu.addItem(copyItem("复制当前路径", text: dirPath))
+        menu.addItem(copyItem("复制当前路径", text: dirPath, symbol: "doc.on.clipboard"))
 
         if config.features.toolbox {
-            menu.addItem(openItem("粘贴到此", url: ActionURL.encode(.init(action: .pasteHere, dir: dirPath))))
-            menu.addItem(openItem("显示/隐藏 隐藏文件", url: ActionURL.encode(.init(action: .toggleHidden))))
+            menu.addItem(openItem("粘贴到此", url: ActionURL.encode(.init(action: .pasteHere, dir: dirPath)), symbol: "doc.on.clipboard.fill"))
+            menu.addItem(openItem("显示/隐藏 隐藏文件", url: ActionURL.encode(.init(action: .toggleHidden)), symbol: "eye"))
         }
     }
 
@@ -95,8 +96,8 @@ final class MenuBuilder {
         let paths = selected.map { $0.path }
         let names = selected.map { $0.lastPathComponent }
 
-        menu.addItem(copyItem("复制路径", text: PathUtils.joinForClipboard(paths)))
-        menu.addItem(copyItem("复制名称", text: PathUtils.joinForClipboard(names)))
+        menu.addItem(copyItem("复制路径", text: PathUtils.joinForClipboard(paths), symbol: "doc.on.clipboard"))
+        menu.addItem(copyItem("复制名称", text: PathUtils.joinForClipboard(names), symbol: "textformat"))
         menu.addItem(.separator())
 
         // 移动到 / 复制到 ▸
@@ -104,16 +105,16 @@ final class MenuBuilder {
             let moveTo = submenu("移动到")
             for t in config.sendTargets {
                 let url = ActionURL.encode(.init(action: .moveTo, paths: paths, dest: t.path))
-                moveTo.addItem(openItem(t.name, url: url))
+                moveTo.addItem(openItem(t.name, url: url, image: Self.folderIcon()))
             }
-            menu.addItem(parent("移动到", submenu: moveTo))
+            menu.addItem(parent("移动到", submenu: moveTo, symbol: "arrow.right.doc.on.clipboard"))
 
             let copyTo = submenu("复制到")
             for t in config.sendTargets {
                 let url = ActionURL.encode(.init(action: .copyTo, paths: paths, dest: t.path))
-                copyTo.addItem(openItem(t.name, url: url))
+                copyTo.addItem(openItem(t.name, url: url, image: Self.folderIcon()))
             }
-            menu.addItem(parent("复制到", submenu: copyTo))
+            menu.addItem(parent("复制到", submenu: copyTo, symbol: "doc.on.doc"))
         }
 
         // 用 App 打开 ▸
@@ -122,9 +123,9 @@ final class MenuBuilder {
             for app in config.openApps {
                 let url = ActionURL.encode(.init(action: .openWith, paths: paths,
                                                  appBundleId: app.bundleId, appPath: app.path))
-                openWith.addItem(openItem(app.name, url: url))
+                openWith.addItem(openItem(app.name, url: url, image: Self.appIcon(bundleId: app.bundleId, path: app.path)))
             }
-            menu.addItem(parent("用 App 打开", submenu: openWith))
+            menu.addItem(parent("用 App 打开", submenu: openWith, symbol: "app.dashed"))
         }
 
         // 文件夹图标 ▸
@@ -133,39 +134,39 @@ final class MenuBuilder {
             let colors = submenu("换颜色")
             for c in config.folderColors {
                 let url = ActionURL.encode(.init(action: .setFolderColor, paths: paths, hex: c.hex))
-                colors.addItem(openItem(c.name, url: url))
+                colors.addItem(openItem(c.name, url: url, image: Self.colorDot(hex: c.hex)))
             }
-            icon.addItem(parent("换颜色", submenu: colors))
-            icon.addItem(openItem("设置自定义图标…", url: ActionURL.encode(.init(action: .setCustomIcon, paths: paths))))
-            icon.addItem(openItem("拷贝图标", url: ActionURL.encode(.init(action: .copyIcon, paths: paths))))
-            icon.addItem(openItem("粘贴图标", url: ActionURL.encode(.init(action: .pasteIcon, paths: paths))))
-            icon.addItem(openItem("清除自定义图标", url: ActionURL.encode(.init(action: .clearIcon, paths: paths))))
-            menu.addItem(parent("文件夹图标", submenu: icon))
+            icon.addItem(parent("换颜色", submenu: colors, symbol: "paintpalette"))
+            icon.addItem(openItem("设置自定义图标…", url: ActionURL.encode(.init(action: .setCustomIcon, paths: paths)), symbol: "photo"))
+            icon.addItem(openItem("拷贝图标", url: ActionURL.encode(.init(action: .copyIcon, paths: paths)), symbol: "doc.on.doc"))
+            icon.addItem(openItem("粘贴图标", url: ActionURL.encode(.init(action: .pasteIcon, paths: paths)), symbol: "doc.on.clipboard"))
+            icon.addItem(openItem("清除自定义图标", url: ActionURL.encode(.init(action: .clearIcon, paths: paths)), symbol: "arrow.uturn.backward"))
+            menu.addItem(parent("文件夹图标", submenu: icon, symbol: "folder.badge.gearshape"))
         }
 
         // 工具箱 ▸
         if config.features.toolbox {
             let tb = submenu("工具箱")
-            tb.addItem(openItem("剪切", url: ActionURL.encode(.init(action: .markCut, paths: paths))))
-            tb.addItem(openItem("拷贝", url: ActionURL.encode(.init(action: .markCopy, paths: paths))))
+            tb.addItem(openItem("剪切", url: ActionURL.encode(.init(action: .markCut, paths: paths)), symbol: "scissors"))
+            tb.addItem(openItem("拷贝", url: ActionURL.encode(.init(action: .markCopy, paths: paths)), symbol: "doc.on.doc"))
             tb.addItem(.separator())
-            tb.addItem(openItem("压缩为 ZIP", url: ActionURL.encode(.init(action: .zip, paths: paths))))
-            tb.addItem(openItem("解压", url: ActionURL.encode(.init(action: .unzip, paths: paths))))
+            tb.addItem(openItem("压缩为 ZIP", url: ActionURL.encode(.init(action: .zip, paths: paths)), symbol: "archivebox"))
+            tb.addItem(openItem("解压", url: ActionURL.encode(.init(action: .unzip, paths: paths)), symbol: "archivebox"))
             let conv = submenu("转换图片为")
             for f in ImageFormat.allCases {
-                conv.addItem(openItem(f.displayName, url: ActionURL.encode(.init(action: .convertImage, paths: paths, fmt: f.rawValue))))
+                conv.addItem(openItem(f.displayName, url: ActionURL.encode(.init(action: .convertImage, paths: paths, fmt: f.rawValue)), symbol: "photo"))
             }
-            tb.addItem(parent("转换图片为", submenu: conv))
-            tb.addItem(openItem("生成二维码", url: ActionURL.encode(.init(action: .qrcode, paths: paths))))
+            tb.addItem(parent("转换图片为", submenu: conv, symbol: "photo.on.rectangle.angled"))
+            tb.addItem(openItem("生成二维码", url: ActionURL.encode(.init(action: .qrcode, paths: paths)), symbol: "qrcode"))
             tb.addItem(.separator())
-            tb.addItem(openItem("文件信息", url: ActionURL.encode(.init(action: .fileInfo, paths: paths))))
-            tb.addItem(openItem("创建替身", url: ActionURL.encode(.init(action: .makeAlias, paths: paths))))
-            tb.addItem(openItem("创建符号链接", url: ActionURL.encode(.init(action: .makeSymlink, paths: paths))))
-            tb.addItem(openItem("批量重命名…", url: ActionURL.encode(.init(action: .batchRename, paths: paths))))
+            tb.addItem(openItem("文件信息", url: ActionURL.encode(.init(action: .fileInfo, paths: paths)), symbol: "info.circle"))
+            tb.addItem(openItem("创建替身", url: ActionURL.encode(.init(action: .makeAlias, paths: paths)), symbol: "arrowshape.turn.up.left"))
+            tb.addItem(openItem("创建符号链接", url: ActionURL.encode(.init(action: .makeSymlink, paths: paths)), symbol: "link"))
+            tb.addItem(openItem("批量重命名…", url: ActionURL.encode(.init(action: .batchRename, paths: paths)), symbol: "character.cursor.ibeam"))
             tb.addItem(.separator())
-            tb.addItem(openItem("显示/隐藏 隐藏文件", url: ActionURL.encode(.init(action: .toggleHidden))))
-            tb.addItem(openItem("永久删除…", url: ActionURL.encode(.init(action: .deletePermanently, paths: paths))))
-            menu.addItem(parent("工具箱", submenu: tb))
+            tb.addItem(openItem("显示/隐藏 隐藏文件", url: ActionURL.encode(.init(action: .toggleHidden)), symbol: "eye"))
+            tb.addItem(openItem("永久删除…", url: ActionURL.encode(.init(action: .deletePermanently, paths: paths)), symbol: "trash"))
+            menu.addItem(parent("工具箱", submenu: tb, symbol: "wrench.and.screwdriver"))
         }
     }
 
@@ -173,23 +174,73 @@ final class MenuBuilder {
 
     private func submenu(_ title: String) -> NSMenu { NSMenu(title: title) }
 
-    private func parent(_ title: String, submenu: NSMenu) -> NSMenuItem {
+    private func parent(_ title: String, submenu: NSMenu, symbol: String? = nil) -> NSMenuItem {
         let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
         item.submenu = submenu
+        item.image = symbol.flatMap(Self.sf)
         return item
     }
 
-    private func openItem(_ title: String, url: URL) -> NSMenuItem {
+    private func openItem(_ title: String, url: URL, symbol: String? = nil, image: NSImage? = nil) -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
         item.target = target
         item.tag = register(.open(url))
+        item.image = image ?? symbol.flatMap(Self.sf)
         return item
     }
 
-    private func copyItem(_ title: String, text: String) -> NSMenuItem {
+    private func copyItem(_ title: String, text: String, symbol: String? = nil) -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
         item.target = target
         item.tag = register(.copy(text))
+        item.image = symbol.flatMap(Self.sf)
         return item
+    }
+
+    // MARK: - 图标
+
+    private static let iconSize = NSSize(width: 16, height: 16)
+
+    /// SF Symbol 小图标。
+    static func sf(_ name: String) -> NSImage? {
+        let img = NSImage(systemSymbolName: name, accessibilityDescription: nil)
+        img?.size = iconSize
+        return img
+    }
+
+    /// 某扩展名对应的系统文档图标（显示 Word/Excel 等真实图标）。
+    static func fileIcon(ext: String) -> NSImage {
+        let type = UTType(filenameExtension: ext) ?? .data
+        let img = NSWorkspace.shared.icon(for: type)
+        img.size = iconSize
+        return img
+    }
+
+    /// App 图标（bundleId 优先，其次 path）；取不到回退 SF。
+    static func appIcon(bundleId: String?, path: String?) -> NSImage? {
+        var url: URL?
+        if let b = bundleId { url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: b) }
+        if url == nil, let p = path { url = URL(fileURLWithPath: PathUtils.expand(p)) }
+        guard let u = url else { return sf("app") }
+        let img = NSWorkspace.shared.icon(forFile: u.path)
+        img.size = iconSize
+        return img
+    }
+
+    static func folderIcon() -> NSImage {
+        let img = NSWorkspace.shared.icon(for: .folder)
+        img.size = iconSize
+        return img
+    }
+
+    /// 实心色点（文件夹换色用）。
+    static func colorDot(hex: String) -> NSImage? {
+        guard let rgb = ColorHex.rgb(hex) else { return nil }
+        let img = NSImage(size: iconSize)
+        img.lockFocus()
+        NSColor(red: rgb.r, green: rgb.g, blue: rgb.b, alpha: 1).setFill()
+        NSBezierPath(ovalIn: NSRect(x: 2, y: 2, width: 12, height: 12)).fill()
+        img.unlockFocus()
+        return img
     }
 }
