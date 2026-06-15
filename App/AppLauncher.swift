@@ -13,6 +13,15 @@ enum AppLauncherError: Error, LocalizedError {
 /// 启动 App、在 Finder 跳转目录。
 enum AppLauncher {
 
+    /// 终端类 App：打开"文件"无意义，应改为进入其所在目录。
+    static let terminalBundleIds: Set<String> = [
+        "com.apple.Terminal",
+        "com.googlecode.iterm2",
+        "dev.warp.Warp-Stable",
+        "io.alacritty",
+        "net.kovidgoyal.kitty"
+    ]
+
     /// 解析 App 的 URL：优先 bundleId，其次 path。
     static func resolveApp(bundleId: String?, path: String?) -> URL? {
         if let bid = bundleId,
@@ -35,7 +44,23 @@ enum AppLauncher {
             completion(AppLauncherError.appNotFound(bundleId ?? appPath ?? "未知"))
             return
         }
-        let urls = paths.map { URL(fileURLWithPath: PathUtils.expand($0)) }
+        let isTerminal = bundleId.map { terminalBundleIds.contains($0) } ?? false
+        let fm = FileManager.default
+        var seen = Set<String>()
+        var urls: [URL] = []
+        for p in paths {
+            var resolved = PathUtils.expand(p)
+            if isTerminal {
+                // 终端打开文件 → 改为进入其所在目录
+                var isDir: ObjCBool = false
+                if fm.fileExists(atPath: resolved, isDirectory: &isDir), !isDir.boolValue {
+                    resolved = (resolved as NSString).deletingLastPathComponent
+                }
+            }
+            if seen.insert(resolved).inserted {   // 去重（多个文件可能同目录）
+                urls.append(URL(fileURLWithPath: resolved))
+            }
+        }
         let config = NSWorkspace.OpenConfiguration()
         NSWorkspace.shared.open(urls, withApplicationAt: appURL, configuration: config) { _, error in
             completion(error)

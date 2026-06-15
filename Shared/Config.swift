@@ -47,7 +47,8 @@ struct Config: Codable, Equatable {
         ],
         openApps: [
             OpenApp(name: "终端", bundleId: "com.apple.Terminal", path: nil),
-            OpenApp(name: "访达", bundleId: "com.apple.finder", path: nil)
+            OpenApp(name: "Warp", bundleId: "dev.warp.Warp-Stable", path: nil),
+            OpenApp(name: "Antigravity", bundleId: "com.google.antigravity-ide", path: nil)
         ]
     )
 
