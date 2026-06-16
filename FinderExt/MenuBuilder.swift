@@ -202,10 +202,33 @@ final class MenuBuilder {
     private static let iconSize = NSSize(width: 16, height: 16)
 
     /// SF Symbol 小图标。
+    /// 关键：把矢量 symbol 栅格化成 2x 位图再标 template —— 矢量 symbol 跨进程传给 Finder 时
+    /// template 标志会丢，导致深色菜单里发灰；位图+template 能稳定保住，系统按文字色渲染、高亮反白。
     static func sf(_ name: String) -> NSImage? {
-        let img = NSImage(systemSymbolName: name, accessibilityDescription: nil)
-        img?.size = iconSize
-        return img
+        let cfg = NSImage.SymbolConfiguration(pointSize: 15, weight: .regular)
+        guard let symbol = NSImage(systemSymbolName: name, accessibilityDescription: nil)?
+            .withSymbolConfiguration(cfg) else { return nil }
+        let scale = 2
+        let px = Int(iconSize.width) * scale
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: px, pixelsHigh: px,
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return nil }
+        rep.size = iconSize
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        let r = NSRect(origin: .zero, size: iconSize)
+        // 居中绘制 symbol 的自然尺寸
+        let s = symbol.size
+        let drawRect = NSRect(x: (iconSize.width - s.width) / 2,
+                              y: (iconSize.height - s.height) / 2,
+                              width: s.width, height: s.height)
+        symbol.draw(in: drawRect.intersection(r).isEmpty ? r : drawRect)
+        NSGraphicsContext.restoreGraphicsState()
+        let out = NSImage(size: iconSize)
+        out.addRepresentation(rep)
+        out.isTemplate = true
+        return out
     }
 
     /// 某扩展名对应的系统文档图标（显示 Word/Excel 等真实图标）。
