@@ -2,11 +2,13 @@ import AppKit
 
 /// 菜单栏（状态栏）图标 —— 提供重启 / 打开配置 / 退出。
 /// 因为主程序是无 Dock 图标的后台代理，这是用户唯一的可见入口。
-final class StatusBarController {
+final class StatusBarController: NSObject, NSMenuDelegate {
     private let statusItem: NSStatusItem
+    private let expiryItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
 
-    init() {
+    override init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        super.init()
         if let button = statusItem.button {
             let img = NSImage(systemSymbolName: "cursorarrow.click.2",
                               accessibilityDescription: "SuperRight")
@@ -17,10 +19,13 @@ final class StatusBarController {
 
         let menu = NSMenu()
         menu.autoenablesItems = false
+        menu.delegate = self
 
         let title = NSMenuItem(title: "SuperRight \(appVersion)", action: nil, keyEquivalent: "")
         title.isEnabled = false
         menu.addItem(title)
+        expiryItem.isEnabled = false
+        menu.addItem(expiryItem)
         menu.addItem(.separator())
 
         menu.addItem(item("设置…", #selector(openSettings), key: ","))
@@ -32,6 +37,19 @@ final class StatusBarController {
         menu.addItem(item("退出 SuperRight", #selector(quit), key: "q"))
 
         statusItem.menu = menu
+    }
+
+    // 打开菜单时刷新签名剩余天数。
+    func menuWillOpen(_ menu: NSMenu) {
+        if let days = ProfileExpiry.daysRemaining() {
+            if days < 0 {
+                expiryItem.title = "⚠️ 签名已过期，请续签"
+            } else {
+                expiryItem.title = "签名剩 \(days) 天" + (days <= 2 ? "（建议续签）" : "")
+            }
+        } else {
+            expiryItem.title = "签名状态未知"
+        }
     }
 
     private var appVersion: String {

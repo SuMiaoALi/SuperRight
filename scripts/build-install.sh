@@ -16,9 +16,10 @@ fi
 echo "▶ 1/6 生成工程 (xcodegen)"
 xcodegen generate >/dev/null
 
-echo "▶ 2/6 构建 (xcodebuild, 自动签名/不联网)"
+echo "▶ 2/6 构建 (xcodebuild, 自动签名 + 自动续签 profile)"
+# -allowProvisioningUpdates：正确 team 下可 headless 续期 7 天个人 profile
 xcodebuild build -project SuperRight.xcodeproj -scheme SuperRight \
-  -configuration Debug -derivedDataPath build 2>&1 | grep -iE "error:|BUILD SUCCEEDED|BUILD FAILED" || true
+  -configuration Debug -allowProvisioningUpdates -derivedDataPath build 2>&1 | grep -iE "error:|BUILD SUCCEEDED|BUILD FAILED" || true
 
 if [ ! -d "$APP_SRC" ]; then echo "✗ 构建失败，无产物"; exit 1; fi
 

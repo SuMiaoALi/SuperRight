@@ -83,8 +83,27 @@
 ### 暂缓（v1.1+）
 翻译（需外部 API）、截图标注（系统已有）、Pages/Keynote/AI/PSD 内置模板（用模板目录替代）。
 
+---
+
+## v1.1（产品化 / 开源采纳）
+
+### 自动续签兜底 ✅
+- ✅ **关键发现**：用正确 team + `-allowProvisioningUpdates`，CLI 可 **headless 续期** 7 天 profile（之前失败是 team id 用错）
+- ✅ build-install.sh 加 `-allowProvisioningUpdates`（每次构建即续期）
+- ✅ `scripts/install-autorenew.sh`：LaunchAgent 登录时 + 每 5 天自动重建续签
+- ✅ 菜单栏显示「签名剩 X 天」（ProfileExpiry 读内嵌 profile 到期日）
+
+### 开源采纳 🟡
+- ✅ App 图标（圆角渐变 + 光标符号，整套尺寸，actool 编译进包）
+- ✅ 英文 README（README.md 英文主、README.zh-CN.md 中文）；说明个人 team 二进制不可分发
+- 🟡 **UI i18n（英文界面）待做**——菜单/设置/弹窗约 80 处字符串，需一次性完整翻译（半成品比纯中文更差），建议专门一轮做
+
+### 暂缓
+- 付费开发者号 → 公证 dmg（用户暂不付费）
+- 操作反馈通知、最近目标目录、批量重命名实时预览（体验项，按需再做）
+
 ## 下一步动作
-→ **v1.0 代码全部完成**，单测 33 + 冒烟 11 全绿。**唯一待办：你按「人工验收清单」统一测一遍**（Finder 菜单各项 + 设置界面 + 弹窗类动作）。
+→ v1.0 待人工验收（见 acceptance-checklist）；v1.1 自动续签+图标+英文README 已完成；**UI 英文界面 i18n 待专门一轮**。
 
 ## 决策记录
 - 2026-06-13：选 FinderSync 而非 Services/Quick Actions，因核心功能是动态列表，Services 难做。

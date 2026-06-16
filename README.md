@@ -1,112 +1,99 @@
 # SuperRight
 
-一个自建的 macOS Finder 右键增强工具，替代收费的「超级右键」。基于 Apple 官方 **FinderSync** 扩展，菜单项直接出现在右键顶层，由一份 `config.json` 驱动。
+English ｜ [中文](README.zh-CN.md)
 
-> 个人自用 / 自行构建。免费 Apple ID 即可签名运行（有 7 天有效期限制，见[已知限制](#已知限制)）。
+A self-built macOS Finder context-menu enhancer — a free, open-source alternative to paid tools like "超级右键 / iRightMouse". Built on Apple's official **FinderSync** extension, so items appear at the top level of the right-click menu, all driven by a single `config.json`.
 
-## 功能
+> Personal use / build-it-yourself. Runs with a free Apple ID (the provisioning profile lasts 7 days; auto-renew is included — see [Limitations](#limitations)).
 
-右键**文件夹空白处**：
+## Features
 
-- **新建文件** ▸ 纯文本类型（txt/md/rtf/json/sh…）、内置 Office 模板（Word/Excel/PPT）、**模板目录**里的任意类型、或自定义名称（重名自动加序号）
-- **在此打开** ▸ 用终端 / Warp / 编辑器等打开当前目录
-- **跳转到** ▸ 在 Finder 打开常用目录
-- **复制当前路径**、**粘贴到此**、**显示/隐藏 隐藏文件**
+Right-click on **empty space in a folder**:
 
-右键**选中的文件**：
+- **New File** ▸ plain-text types (txt/md/rtf/json/sh…), built-in Office templates (Word/Excel/PPT), anything in your **templates folder**, or a custom name (auto-numbered on conflict)
+- **Open Here** ▸ open the current folder in Terminal / Warp / an editor
+- **Go To** ▸ jump to favorite directories in Finder
+- **Copy Current Path**, **Paste Here**, **Toggle Hidden Files**
 
-- **复制路径** / **复制名称**
-- **移动到** ▸ / **复制到** ▸ 常用目标（非破坏式，冲突自动加序号）
-- **用 App 打开** ▸ （终端类 App 会自动进入文件所在目录）
-- **文件夹图标** ▸ 换颜色 / 自定义图标 / 拷贝粘贴 / 清除
-- **工具箱** ▸ 剪切拷贝、压缩 ZIP / 解压、图片格式转换、生成二维码、文件信息(MD5/SHA256)、创建替身/符号链接、批量重命名、永久删除
+Right-click on **selected files**:
 
-**设置界面**（菜单栏图标 → 设置…）：图形化增删改各列表、菜单分组开关、模板文件夹、权限引导、登录自启——无需手改 JSON。配置改动即时生效。
+- **Copy Path** / **Copy Name**
+- **Move To** ▸ / **Copy To** ▸ favorite destinations (non-destructive, auto-numbered on conflict)
+- **Open With** ▸ (terminal-class apps automatically open the file's containing folder)
+- **Folder Icon** ▸ recolor / custom icon / copy-paste / reset
+- **Toolbox** ▸ cut & paste, zip / unzip, image-format conversion, QR code, file info (MD5/SHA256), make alias / symlink, batch rename, permanent delete
 
-## 架构
+**Settings window** (menu-bar icon → Settings…): edit every list graphically, toggle menu groups, set the templates folder, permission shortcuts, launch-at-login — no JSON editing required. Config changes apply instantly.
+
+## Architecture
 
 ```
-SuperRight.app（主程序，非沙盒，菜单栏图标常驻）
- ├─ FinderExt.appex（FinderSync 扩展，沙盒）── 弹菜单 + 捕获点击
- └─ App Group 共享容器 ── config.json，两端共读
+SuperRight.app  (main app, non-sandboxed, lives in the menu bar)
+ ├─ FinderExt.appex  (FinderSync extension, sandboxed) — builds the menu + captures clicks
+ └─ App Group container — config.json, read by both
 ```
 
-- 扩展沙盒受限，**轻动作就地做**（复制路径写剪贴板），**重动作打包成 `superright://` URL** 交给非沙盒主程序执行真正的文件操作 / 启动 App。
-- 菜单项用 `tag` 标识派发（FinderSync 会丢弃 `representedObject`，这是关键坑）。
-- 纯逻辑（配置解析、URL 编解码、重名加序号、路径处理）抽成共享模块并有单元测试。
+- The extension is sandboxed: **light actions run in place** (copy path → pasteboard), while **heavy actions are encoded into a `superright://` URL** and handed to the non-sandboxed main app, which performs the real file ops / app launches.
+- Menu items are dispatched by `tag` (FinderSync drops `representedObject` across the process boundary — a key gotcha).
+- Pure logic (config parsing, URL coding, conflict-free naming, path handling) lives in a shared module with unit tests.
 
-详见 [`docs/`](docs/finder-context-menu/)（设计、调研、踩坑、tracker）。
+See [`docs/`](docs/finder-context-menu/) for design, research and decisions.
 
-## 系统要求
+## Requirements
 
-- macOS 14+（开发机为 macOS 26 / Apple Silicon 实测）
-- 完整版 **Xcode**（不能只装 Command Line Tools，FinderSync 扩展打包需要）
-- [XcodeGen](https://github.com/yonyz/XcodeGen)：`brew install xcodegen`
+- macOS 14+
+- Full **Xcode** (Command Line Tools alone can't package a FinderSync extension)
+- [XcodeGen](https://github.com/yonyz/XcodeGen): `brew install xcodegen`
 
-## 构建与安装
+## Build & Install
 
-1. **登录 Apple ID 并生成首个 profile**（一次性，需 GUI）：
-   - `xcodegen generate` 生成 `SuperRight.xcodeproj` 并打开
-   - Xcode → Settings → Accounts 登录 Apple ID（免费个人即可）
-   - 给 `SuperRight` 和 `FinderExt` 两个 target 各在 Signing & Capabilities 里选一次你的 *(Personal Team)*
-
-2. **填写本地签名配置**：
+1. **Sign in & generate the first profile** (one-time, GUI): run `xcodegen generate`, open the project, sign in with a free Apple ID under Xcode → Settings → Accounts, and pick your *(Personal Team)* once for both the `SuperRight` and `FinderExt` targets in Signing & Capabilities.
+2. **Local signing config**: `cp Local.xcconfig.example Local.xcconfig` and fill in your Team ID — use the profile's `TeamIdentifier`, **not** the parenthesized value in the certificate name (that's the cert OU):
    ```bash
-   cp Local.xcconfig.example Local.xcconfig
-   # 编辑 Local.xcconfig，填入你的 Team ID（profile 的 TeamIdentifier，不是证书 OU！）
-   # 查 Team ID：
-   security cms -D -i ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*.provisionprofile \
-     | plutil -extract TeamIdentifier.0 raw -
+   security cms -D -i ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*.provisionprofile | plutil -extract TeamIdentifier.0 raw -
    ```
-
-3. **一键构建 + 安装 + 启用**：
+3. **One-shot build + install + enable**:
    ```bash
    bash scripts/build-install.sh
    ```
-   它会：生成工程 → 构建 → 安装到 `/Applications` → 启动主程序 → 启用 Finder 扩展 → 重启 Finder。
+   Generates the project → builds → installs to `/Applications` → launches the app → enables the Finder extension → restarts Finder.
+4. **Grant permissions** (first run): enable **SuperRight** under System Settings → Login Items & Extensions → Finder Extensions, and add **SuperRight.app** to Full Disk Access (otherwise protected folders keep prompting).
 
-4. **授权**（首次）：
-   - 「系统设置 → 登录项与扩展 → Finder 扩展」勾选 **SuperRight**（脚本已尝试自动启用）
-   - 「系统设置 → 隐私与安全性 → 完全磁盘访问权限」加入 **SuperRight.app**（否则操作受保护目录会反复弹隐私窗）
+## Auto-renew (the 7-day expiry)
 
-## 配置
+A free personal team's profile expires after 7 days. One command installs a LaunchAgent that rebuilds & re-signs at login and every 5 days:
 
-文件位置：`~/Library/Group Containers/group.com.cola.SuperRight/config.json`
-（也可从菜单栏图标 → 打开配置文件）。**存盘即时生效**，无需重启 Finder。
+```bash
+bash scripts/install-autorenew.sh            # install
+bash scripts/install-autorenew.sh uninstall  # remove
+```
+
+The menu-bar icon shows "signature: N days left". A paid Apple Developer account ($99/yr) removes the expiry entirely and lets you notarize a `.dmg` for distribution.
+
+## Configuration
+
+`~/Library/Group Containers/group.com.cola.SuperRight/config.json` (or menu-bar icon → Open Config File). Saved changes apply instantly. Paths support `~`; apps can be referenced by `bundleId` or `path`; a missing/corrupt file falls back to built-in defaults so the menu never goes empty.
 
 ```json
 {
   "scope": "/",
   "newFileTypes": [{ "name": "Markdown", "ext": "md" }],
-  "favoriteDirs":  [{ "name": "下载", "path": "~/Downloads" }],
-  "sendTargets":   [{ "name": "项目", "path": "~/projects" }],
+  "favoriteDirs":  [{ "name": "Downloads", "path": "~/Downloads" }],
+  "sendTargets":   [{ "name": "Projects", "path": "~/projects" }],
   "openApps": [
-    { "name": "终端", "bundleId": "com.apple.Terminal" },
-    { "name": "Antigravity", "bundleId": "com.google.antigravity-ide" }
+    { "name": "Terminal", "bundleId": "com.apple.Terminal" }
   ]
 }
 ```
 
-- 路径支持 `~`。App 可用 `bundleId` 或 `path` 定位。
-- 配置缺失/损坏时回退内置默认，菜单不会变空。
+## Limitations
 
-## 菜单栏图标
+- **Free personal-team profiles last only 7 days** — mitigated by the auto-renew LaunchAgent above; a paid account removes it.
+- **The binary can't be distributed as-is**: a personal-team signature is only valid on the machine that built it. Others must build it themselves. Shipping a `.dmg` requires a paid account + notarization.
+- Protected folders require Full Disk Access — the common cost of a non-sandboxed helper.
 
-主程序无 Dock 图标（后台代理）。菜单栏的 SuperRight 图标提供：**重启 / 打开配置 / 在 Finder 显示配置 / 退出**。
+> Note: the UI is currently Chinese; English localization is planned. Contributions welcome.
 
-## 已知限制
-
-- **免费个人 team 的 provisioning profile 仅 7 天有效**。过期后扩展可能失效，重跑 `bash scripts/build-install.sh` 续期（必要时先在 Xcode 里 ⌘B 刷新一次 profile）。加入付费开发者计划可避免。
-- 需要「完全磁盘访问权限」才能顺畅操作受保护目录——这是非沙盒工具的通用代价，「超级右键」同样如此。
-
-## 开发
-
-```bash
-# 单元测试（纯逻辑）
-xcodebuild test -project SuperRight.xcodeproj -scheme SharedTests \
-  -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
-```
-
-## 许可证
+## License
 
 [Apache-2.0](LICENSE)
