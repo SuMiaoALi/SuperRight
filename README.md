@@ -92,7 +92,7 @@ The menu-bar icon shows "signature: N days left". A paid Apple Developer account
 - **The binary can't be distributed as-is**: a personal-team signature is only valid on the machine that built it. Others must build it themselves. Shipping a `.dmg` requires a paid account + notarization.
 - Protected folders require Full Disk Access — the common cost of a non-sandboxed helper.
 
-> Note: the UI is currently Chinese; English localization is planned. Contributions welcome.
+> UI is bilingual (English / 中文), following the system language. Override it under Settings → Language.
 
 ## License
 

@@ -93,10 +93,10 @@
 - ✅ `scripts/install-autorenew.sh`：LaunchAgent 登录时 + 每 5 天自动重建续签
 - ✅ 菜单栏显示「签名剩 X 天」（ProfileExpiry 读内嵌 profile 到期日）
 
-### 开源采纳 🟡
+### 开源采纳 ✅
 - ✅ App 图标（圆角渐变 + 光标符号，整套尺寸，actool 编译进包）
 - ✅ 英文 README（README.md 英文主、README.zh-CN.md 中文）；说明个人 team 二进制不可分发
-- 🟡 **UI i18n（英文界面）待做**——菜单/设置/弹窗约 80 处字符串，需一次性完整翻译（半成品比纯中文更差），建议专门一轮做
+- ✅ UI i18n：L10n（中文为key英文查表，跟随系统+settings.language覆盖），菜单/菜单栏/设置/弹窗/错误全本地化，设置加语言选择器，+6 单测（共39）
 
 ### 暂缓
 - 付费开发者号 → 公证 dmg（用户暂不付费）
