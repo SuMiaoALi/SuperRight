@@ -103,7 +103,7 @@
 - 操作反馈通知、最近目标目录、批量重命名实时预览（体验项，按需再做）
 
 ## 下一步动作
-→ v1.0 待人工验收（见 acceptance-checklist）；v1.1 自动续签+图标+英文README 已完成；**UI 英文界面 i18n 待专门一轮**。
+→ v1.0/v1.1 代码全部完成（自动续签+图标+中英双语+英文README），39 单测全绿。剩用户人工验收（见 acceptance-checklist）。
 
 ## 决策记录
 - 2026-06-13：选 FinderSync 而非 Services/Quick Actions，因核心功能是动态列表，Services 难做。
@@ -122,4 +122,4 @@
 - ✅ App Group（免费个人 team）可用，已验证。
 - ✅ 沙盒扩展 → superright:// → 主程序 IPC 可用，app 侧已端到端验证。
 - 🟡 Finder 右键菜单实际渲染待人工验证（最后一步）。
-- 🟡 Provisioning profile 7 天到期，需周期性重新构建续期（个人 team 限制）。
+- ✅ Provisioning profile 7 天到期 → 已用 install-autorenew.sh（登录+每5天）自动续期 + 菜单栏倒计时缓解。
