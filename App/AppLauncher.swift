@@ -5,7 +5,7 @@ enum AppLauncherError: Error, LocalizedError {
     case appNotFound(String)
     var errorDescription: String? {
         switch self {
-        case .appNotFound(let a): return "找不到 App：\(a)"
+        case .appNotFound(let a): return L("找不到 App：") + a
         }
     }
 }

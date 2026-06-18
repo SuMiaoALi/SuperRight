@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 播种内置模板到 App Group（供扩展读取）。
         TemplateStore.seedBuiltins(from: .main)
         let config = ConfigStore.load()
+        L10n.apply(config.settings.language)
         // 菜单栏图标（重启 / 配置 / 设置 / 退出 入口）；可在设置里关闭。
         if config.settings.menuBarIcon {
             statusBar = StatusBarController()

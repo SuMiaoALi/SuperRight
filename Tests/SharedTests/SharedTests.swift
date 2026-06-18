@@ -162,6 +162,39 @@ final class ByteFormatTests: XCTestCase {
     func testMB() { XCTAssertEqual(ByteFormat.human(5 * 1024 * 1024), "5.00 MB") }
 }
 
+final class L10nTests: XCTestCase {
+    func testOverrideEnglish() {
+        L10n.override = "en"
+        XCTAssertEqual(L("新建文件"), "New File")
+        XCTAssertEqual(L("工具箱"), "Toolbox")
+    }
+    func testOverrideChinese() {
+        L10n.override = "zh"
+        XCTAssertEqual(L("新建文件"), "新建文件")
+    }
+    func testMissingKeyFallsBackToChinese() {
+        L10n.override = "en"
+        XCTAssertEqual(L("某个没翻译的词"), "某个没翻译的词")
+        L10n.override = nil
+    }
+    func testApply() {
+        L10n.apply("en"); XCTAssertTrue(L10n.isEnglish)
+        L10n.apply("zh"); XCTAssertFalse(L10n.isEnglish)
+        L10n.apply("system"); XCTAssertNil(L10n.override)
+    }
+}
+
+final class ConfigLanguageTests: XCTestCase {
+    func testLanguageDefaultsToSystem() {
+        let cfg = Config.decode(from: Data("{}".utf8))
+        XCTAssertEqual(cfg?.settings.language, "system")
+    }
+    func testLanguageRoundTrip() {
+        var c = Config.default; c.settings.language = "en"
+        XCTAssertEqual(Config.decode(from: c.encoded())?.settings.language, "en")
+    }
+}
+
 final class ImageFormatTests: XCTestCase {
     func testUTIs() {
         XCTAssertEqual(ImageFormat.jpg.uti, "public.jpeg")

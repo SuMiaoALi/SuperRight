@@ -55,15 +55,17 @@ struct FeatureToggles: Codable, Equatable {
 struct AppSettings: Codable, Equatable {
     var menuBarIcon = true
     var launchAtLogin = false
+    var language = "system"   // "system" | "zh" | "en"
 
-    init(menuBarIcon: Bool = true, launchAtLogin: Bool = false) {
-        self.menuBarIcon = menuBarIcon; self.launchAtLogin = launchAtLogin
+    init(menuBarIcon: Bool = true, launchAtLogin: Bool = false, language: String = "system") {
+        self.menuBarIcon = menuBarIcon; self.launchAtLogin = launchAtLogin; self.language = language
     }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         menuBarIcon = try c.decodeIfPresent(Bool.self, forKey: .menuBarIcon) ?? true
         launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? false
+        language = try c.decodeIfPresent(String.self, forKey: .language) ?? "system"
     }
 }
 

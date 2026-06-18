@@ -24,11 +24,11 @@ enum IconOps {
     /// 给文件夹换颜色。
     static func setColor(_ paths: [String], hex: String) throws {
         guard let icon = tintedFolderIcon(hex: hex) else {
-            throw SimpleError("颜色值无效：\(hex)")
+            throw SimpleError(L("颜色值无效：") + hex)
         }
         for p in paths {
             if !NSWorkspace.shared.setIcon(icon, forFile: p, options: []) {
-                throw SimpleError("设置图标失败：\(PathUtils.lastComponent(p))")
+                throw SimpleError(L("设置图标失败：") + PathUtils.lastComponent(p))
             }
         }
     }
@@ -36,11 +36,11 @@ enum IconOps {
     /// 设置自定义图标（用一张图片）。
     static func setCustomIcon(_ paths: [String], imagePath: String) throws {
         guard let image = NSImage(contentsOfFile: imagePath) else {
-            throw SimpleError("无法读取图片：\(PathUtils.lastComponent(imagePath))")
+            throw SimpleError(L("无法读取图片：") + PathUtils.lastComponent(imagePath))
         }
         for p in paths {
             if !NSWorkspace.shared.setIcon(image, forFile: p, options: []) {
-                throw SimpleError("设置图标失败：\(PathUtils.lastComponent(p))")
+                throw SimpleError(L("设置图标失败：") + PathUtils.lastComponent(p))
             }
         }
     }
@@ -49,7 +49,7 @@ enum IconOps {
     static func clearIcon(_ paths: [String]) throws {
         for p in paths {
             if !NSWorkspace.shared.setIcon(nil, forFile: p, options: []) {
-                throw SimpleError("清除图标失败：\(PathUtils.lastComponent(p))")
+                throw SimpleError(L("清除图标失败：") + PathUtils.lastComponent(p))
             }
         }
     }
@@ -67,11 +67,11 @@ enum IconOps {
         let pb = NSPasteboard.general
         guard let objs = pb.readObjects(forClasses: [NSImage.self], options: nil) as? [NSImage],
               let image = objs.first else {
-            throw SimpleError("剪贴板里没有图标/图片")
+            throw SimpleError(L("剪贴板里没有图标/图片"))
         }
         for p in paths {
             if !NSWorkspace.shared.setIcon(image, forFile: p, options: []) {
-                throw SimpleError("粘贴图标失败：\(PathUtils.lastComponent(p))")
+                throw SimpleError(L("粘贴图标失败：") + PathUtils.lastComponent(p))
             }
         }
     }

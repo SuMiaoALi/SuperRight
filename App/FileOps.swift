@@ -6,8 +6,8 @@ enum FileOpsError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .cannotCreate(let r): return "新建文件失败：\(r)"
-        case .cannotTransfer(let src, let reason): return "处理「\(PathUtils.lastComponent(src))」失败：\(reason)"
+        case .cannotCreate(let r): return L("新建文件失败：") + r
+        case .cannotTransfer(let src, let reason): return (L10n.isEnglish ? "Failed to process \"\(PathUtils.lastComponent(src))\": " : "处理「\(PathUtils.lastComponent(src))」失败：") + reason
         }
     }
 }

@@ -16,7 +16,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         }
         let host = NSHostingController(rootView: SettingsView(store: store))
         let w = NSWindow(contentViewController: host)
-        w.title = "SuperRight 设置"
+        w.title = L("SuperRight 设置")
         w.styleMask = [.titled, .closable, .miniaturizable]
         w.isReleasedWhenClosed = false
         w.delegate = self

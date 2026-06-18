@@ -20,6 +20,7 @@ final class MenuBuilder {
     }
 
     func menu(for kind: FIMenuKind, selected: [URL], targetDir: URL?) -> NSMenu {
+        L10n.apply(config.settings.language)
         let menu = NSMenu(title: "SuperRight")
         switch kind {
         case .contextualMenuForContainer, .contextualMenuForSidebar:
@@ -172,17 +173,18 @@ final class MenuBuilder {
 
     // MARK: - 构造辅助
 
-    private func submenu(_ title: String) -> NSMenu { NSMenu(title: title) }
+    // 标题统一套 L()：菜单固定项被翻译，动态项（App名/类型名/格式名）查不到表自动保持原样。
+    private func submenu(_ title: String) -> NSMenu { NSMenu(title: L(title)) }
 
     private func parent(_ title: String, submenu: NSMenu, symbol: String? = nil) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        let item = NSMenuItem(title: L(title), action: nil, keyEquivalent: "")
         item.submenu = submenu
         item.image = symbol.flatMap(Self.sf)
         return item
     }
 
     private func openItem(_ title: String, url: URL, symbol: String? = nil, image: NSImage? = nil) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+        let item = NSMenuItem(title: L(title), action: action, keyEquivalent: "")
         item.target = target
         item.tag = register(.open(url))
         item.image = image ?? symbol.flatMap(Self.sf)
@@ -190,7 +192,7 @@ final class MenuBuilder {
     }
 
     private func copyItem(_ title: String, text: String, symbol: String? = nil) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+        let item = NSMenuItem(title: L(title), action: action, keyEquivalent: "")
         item.target = target
         item.tag = register(.copy(text))
         item.image = symbol.flatMap(Self.sf)

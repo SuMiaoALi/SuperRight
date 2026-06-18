@@ -9,6 +9,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     override init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
+        L10n.apply(ConfigStore.load().settings.language)
         if let button = statusItem.button {
             let img = NSImage(systemSymbolName: "cursorarrow.click.2",
                               accessibilityDescription: "SuperRight")
@@ -41,14 +42,15 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     // 打开菜单时刷新签名剩余天数。
     func menuWillOpen(_ menu: NSMenu) {
+        L10n.apply(ConfigStore.load().settings.language)
         if let days = ProfileExpiry.daysRemaining() {
             if days < 0 {
-                expiryItem.title = "⚠️ 签名已过期，请续签"
+                expiryItem.title = L("⚠️ 签名已过期，请续签")
             } else {
-                expiryItem.title = "签名剩 \(days) 天" + (days <= 2 ? "（建议续签）" : "")
+                expiryItem.title = "\(L("签名剩")) \(days) \(L("天"))" + (days <= 2 ? L("（建议续签）") : "")
             }
         } else {
-            expiryItem.title = "签名状态未知"
+            expiryItem.title = L("签名状态未知")
         }
     }
 
@@ -57,7 +59,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
 
     private func item(_ title: String, _ action: Selector, key: String = "") -> NSMenuItem {
-        let i = NSMenuItem(title: title, action: action, keyEquivalent: key)
+        let i = NSMenuItem(title: L(title), action: action, keyEquivalent: key)
         i.target = self
         i.isEnabled = true
         return i

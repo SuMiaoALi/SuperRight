@@ -12,6 +12,7 @@ struct SimpleError: LocalizedError {
 enum CommandHandler {
 
     static func handle(_ cmd: ActionURL.Command) {
+        L10n.apply(ConfigStore.load().settings.language)
         switch cmd.action {
         case .newFile:
             handleNewFile(cmd)
@@ -78,10 +79,10 @@ enum CommandHandler {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.alertStyle = .critical
-        alert.messageText = "永久删除 \(paths.count) 项？"
-        alert.informativeText = "这些文件将被直接删除，不进废纸篓，无法恢复。"
-        alert.addButton(withTitle: "永久删除")
-        alert.addButton(withTitle: "取消")
+        alert.messageText = L10n.isEnglish ? "Delete \(paths.count) items permanently?" : "永久删除 \(paths.count) 项？"
+        alert.informativeText = L("这些文件将被直接删除，不进废纸篓，无法恢复。")
+        alert.addButton(withTitle: L("永久删除"))
+        alert.addButton(withTitle: L("取消"))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         runCatching { try Toolbox.deletePermanently(paths) }
     }
@@ -106,9 +107,9 @@ enum CommandHandler {
     private static func handleNewFile(_ cmd: ActionURL.Command) {
         guard let dir = cmd.dir else { return }
         let ext = cmd.ext ?? ""
-        var base = "未命名"
+        var base = L("未命名")
         if cmd.custom {
-            guard let input = promptForName(defaultName: ext.isEmpty ? "未命名.txt" : "未命名.\(ext)") else {
+            guard let input = promptForName(defaultName: ext.isEmpty ? "\(L("未命名")).txt" : "\(L("未命名")).\(ext)") else {
                 return  // 用户取消
             }
             // 自定义输入可能自带扩展名：拆出 base 与 ext。
@@ -162,10 +163,10 @@ enum CommandHandler {
     private static func promptForName(defaultName: String) -> String? {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
-        alert.messageText = "新建文件"
-        alert.informativeText = "输入文件名（可带扩展名）"
-        alert.addButton(withTitle: "创建")
-        alert.addButton(withTitle: "取消")
+        alert.messageText = L("新建文件")
+        alert.informativeText = L("输入文件名（可带扩展名）")
+        alert.addButton(withTitle: L("创建"))
+        alert.addButton(withTitle: L("取消"))
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 240, height: 24))
         field.stringValue = defaultName
         alert.accessoryView = field
@@ -180,10 +181,10 @@ enum CommandHandler {
     private static func showInfo(_ text: String) {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
-        alert.messageText = "文件信息"
+        alert.messageText = L("文件信息")
         alert.informativeText = text
-        alert.addButton(withTitle: "复制")
-        alert.addButton(withTitle: "关闭")
+        alert.addButton(withTitle: L("复制"))
+        alert.addButton(withTitle: L("关闭"))
         if alert.runModal() == .alertFirstButtonReturn {
             let pb = NSPasteboard.general; pb.clearContents(); pb.setString(text, forType: .string)
         }
@@ -200,11 +201,11 @@ enum CommandHandler {
             tf.widthAnchor.constraint(equalToConstant: 240).isActive = true
             return tf
         }
-        let prefix = field("前缀")
-        let suffix = field("后缀")
-        let find = field("查找")
-        let replace = field("替换为")
-        let index = field("起始序号（留空=不加，可写 001 补零）")
+        let prefix = field(L("前缀"))
+        let suffix = field(L("后缀"))
+        let find = field(L("查找"))
+        let replace = field(L("替换为"))
+        let index = field(L("起始序号（留空=不加，可写 001 补零）"))
 
         func row(_ label: String, _ tf: NSTextField) -> NSStackView {
             let l = NSTextField(labelWithString: label)
@@ -214,17 +215,17 @@ enum CommandHandler {
             return s
         }
         let stack = NSStackView(views: [
-            row("前缀", prefix), row("后缀", suffix),
-            row("查找", find), row("替换为", replace), row("序号", index)
+            row(L("前缀"), prefix), row(L("后缀"), suffix),
+            row(L("查找"), find), row(L("替换为"), replace), row(L("序号"), index)
         ])
         stack.orientation = .vertical; stack.spacing = 8
         stack.frame = NSRect(x: 0, y: 0, width: 330, height: 170)
 
         let alert = NSAlert()
-        alert.messageText = "批量重命名 \(paths.count) 项"
+        alert.messageText = L10n.isEnglish ? "Batch Rename \(paths.count) items" : "批量重命名 \(paths.count) 项"
         alert.accessoryView = stack
-        alert.addButton(withTitle: "重命名")
-        alert.addButton(withTitle: "取消")
+        alert.addButton(withTitle: L("重命名"))
+        alert.addButton(withTitle: L("取消"))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
         var rule = RenameRule(find: find.stringValue, replace: replace.stringValue,
@@ -247,7 +248,7 @@ enum CommandHandler {
     private static func promptForImage() -> String? {
         NSApp.activate(ignoringOtherApps: true)
         let panel = NSOpenPanel()
-        panel.title = "选择图标图片"
+        panel.title = L("选择图标图片")
         panel.allowedContentTypes = [.png, .jpeg, .tiff, .icns, .image]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
@@ -258,9 +259,9 @@ enum CommandHandler {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "操作失败"
+        alert.messageText = L("操作失败")
         alert.informativeText = error.localizedDescription
-        alert.addButton(withTitle: "好")
+        alert.addButton(withTitle: L("好"))
         alert.runModal()
     }
 }
