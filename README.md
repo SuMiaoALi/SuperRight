@@ -6,6 +6,12 @@ A self-built macOS Finder context-menu enhancer — a free, open-source alternat
 
 > Personal use / build-it-yourself. Runs with a free Apple ID (the provisioning profile lasts 7 days; auto-renew is included — see [Limitations](#limitations)).
 
+## Screenshots
+
+| Right-click menu | Settings |
+| --- | --- |
+| ![Context menu](docs/screenshots/context-menu.png) | ![Settings](docs/screenshots/settings.png) |
+
 ## Features
 
 Right-click on **empty space in a folder**:
