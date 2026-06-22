@@ -147,21 +147,31 @@ struct ListsTab: View {
     }
 
     private var appSection: some View {
-        ListBox(title: L("打开方式 App")) {
-            ForEach(store.config.openApps.indices, id: \.self) { i in
-                HStack {
-                    TextField(L("名称"), text: $store.config.openApps[i].name).frame(width: 110)
-                    TextField("bundleId", text: Binding(
-                        get: { store.config.openApps[i].bundleId ?? "" },
-                        set: { store.config.openApps[i].bundleId = $0.isEmpty ? nil : $0 }))
-                    Button(L("选择 App…")) {
-                        if let app = Picker2.chooseApp() { store.config.openApps[i] = app }
+        VStack(alignment: .leading, spacing: 6) {
+            ListBox(title: L("打开方式 App")) {
+                ForEach(store.config.openApps.indices, id: \.self) { i in
+                    HStack {
+                        TextField(L("名称"), text: $store.config.openApps[i].name).frame(width: 110)
+                        TextField("bundleId", text: Binding(
+                            get: { store.config.openApps[i].bundleId ?? "" },
+                            set: { store.config.openApps[i].bundleId = $0.isEmpty ? nil : $0 }))
+                        Button(L("选择 App…")) {
+                            if let app = Picker2.chooseApp() { store.config.openApps[i] = app }
+                        }
+                        DeleteButton { store.config.openApps.remove(at: i) }
                     }
-                    DeleteButton { store.config.openApps.remove(at: i) }
                 }
+            } onAdd: {
+                store.config.openApps.append(OpenApp(name: L("新 App"), bundleId: nil, path: nil))
             }
-        } onAdd: {
-            store.config.openApps.append(OpenApp(name: L("新 App"), bundleId: nil, path: nil))
+            HStack {
+                Button(L("扫描常用 App")) {
+                    let (apps, _) = AppDiscovery.merge(into: store.config.openApps)
+                    store.config.openApps = apps
+                }
+                Text(L("自动发现机器上已装的编辑器/终端/浏览器"))
+                    .font(.caption).foregroundColor(.secondary)
+            }
         }
     }
 }

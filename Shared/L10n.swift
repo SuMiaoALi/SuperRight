@@ -108,6 +108,8 @@ enum L10n {
         "路径": "Path",
         "选择…": "Choose…",
         "选择 App…": "Choose App…",
+        "扫描常用 App": "Scan for Apps",
+        "自动发现机器上已装的编辑器/终端/浏览器": "Auto-discover installed editors / terminals / browsers",
         "新类型": "New Type",
         "新目录": "New Folder",
         "新 App": "New App",
