@@ -11,6 +11,10 @@ class FinderSync: FIFinderSync {
         let config = ConfigStore.load()
         let scope = PathUtils.expand(config.scope)
         FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: scope)]
+        // 预热图标缓存（主线程 async，避免与菜单构建并发读写缓存；不在点击路径上）。
+        DispatchQueue.main.async {
+            MenuBuilder.warmIconCache(config)
+        }
     }
 
     // tag → 动作 的查表（representedObject 在 FinderSync 菜单里会丢，必须用 tag 标识）。

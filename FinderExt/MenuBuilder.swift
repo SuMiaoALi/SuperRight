@@ -200,13 +200,20 @@ final class MenuBuilder {
     }
 
     // MARK: - 图标
+    //
+    // 全部按 key 缓存：扩展进程常驻，首次右键后命中缓存，消除每次 ~1s 的同步图标计算延迟。
 
     private static let iconSize = NSSize(width: 16, height: 16)
+    private static var sfCache: [String: NSImage] = [:]
+    private static var fileIconCache: [String: NSImage] = [:]
+    private static var appIconCache: [String: NSImage] = [:]
+    private static var folderIconCached: NSImage?
 
     /// SF Symbol 小图标。
     /// 关键：把矢量 symbol 栅格化成 2x 位图再标 template —— 矢量 symbol 跨进程传给 Finder 时
     /// template 标志会丢，导致深色菜单里发灰；位图+template 能稳定保住，系统按文字色渲染、高亮反白。
     static func sf(_ name: String) -> NSImage? {
+        if let c = sfCache[name] { return c }
         let cfg = NSImage.SymbolConfiguration(pointSize: 15, weight: .regular)
         guard let symbol = NSImage(systemSymbolName: name, accessibilityDescription: nil)?
             .withSymbolConfiguration(cfg) else { return nil }
@@ -230,32 +237,54 @@ final class MenuBuilder {
         let out = NSImage(size: iconSize)
         out.addRepresentation(rep)
         out.isTemplate = true
+        sfCache[name] = out
         return out
     }
 
     /// 某扩展名对应的系统文档图标（显示 Word/Excel 等真实图标）。
     static func fileIcon(ext: String) -> NSImage {
+        if let c = fileIconCache[ext] { return c }
         let type = UTType(filenameExtension: ext) ?? .data
         let img = NSWorkspace.shared.icon(for: type)
         img.size = iconSize
+        fileIconCache[ext] = img
         return img
     }
 
     /// App 图标（bundleId 优先，其次 path）；取不到回退 SF。
     static func appIcon(bundleId: String?, path: String?) -> NSImage? {
+        let key = bundleId ?? path ?? ""
+        if let c = appIconCache[key] { return c }
         var url: URL?
         if let b = bundleId { url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: b) }
         if url == nil, let p = path { url = URL(fileURLWithPath: PathUtils.expand(p)) }
         guard let u = url else { return sf("app") }
         let img = NSWorkspace.shared.icon(forFile: u.path)
         img.size = iconSize
+        appIconCache[key] = img
         return img
     }
 
     static func folderIcon() -> NSImage {
+        if let c = folderIconCached { return c }
         let img = NSWorkspace.shared.icon(for: .folder)
         img.size = iconSize
+        folderIconCached = img
         return img
+    }
+
+    /// 预热常用图标缓存（扩展加载时后台调用），让首次右键也快。
+    static func warmIconCache(_ config: Config) {
+        _ = folderIcon()
+        for s in ["doc.badge.plus", "arrow.up.forward.app", "folder", "doc.on.clipboard",
+                  "doc.on.clipboard.fill", "eye", "textformat", "arrow.right.doc.on.clipboard",
+                  "doc.on.doc", "app.dashed", "folder.badge.gearshape", "paintpalette", "photo",
+                  "arrow.uturn.backward", "wrench.and.screwdriver", "scissors", "archivebox",
+                  "photo.on.rectangle.angled", "qrcode", "info.circle", "arrowshape.turn.up.left",
+                  "link", "character.cursor.ibeam", "trash", "pencil"] { _ = sf(s) }
+        for t in config.newFileTypes { _ = fileIcon(ext: t.ext) }
+        for t in TemplateStore.list() { _ = fileIcon(ext: t.ext) }
+        for a in config.openApps { _ = appIcon(bundleId: a.bundleId, path: a.path) }
     }
 
     /// 实心色点（文件夹换色用）。
