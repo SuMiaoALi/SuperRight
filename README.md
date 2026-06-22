@@ -8,9 +8,9 @@ A self-built macOS Finder context-menu enhancer — a free, open-source alternat
 
 ## Screenshots
 
-| Right-click menu | Settings |
-| --- | --- |
-| ![Context menu](docs/screenshots/context-menu.png) | ![Settings](docs/screenshots/settings.png) |
+| Right-click menu | Settings | Menu bar |
+| --- | --- | --- |
+| ![Context menu](docs/screenshots/context-menu.png) | ![Settings](docs/screenshots/settings.png) | ![Menu bar](docs/screenshots/dock-status.png) |
 
 ## Features
 
