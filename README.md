@@ -47,17 +47,13 @@ See [`docs/`](docs/finder-context-menu/) for design, research and decisions.
 
 ## Build & Install
 
-1. **Sign in & generate the first profile** (one-time, GUI): run `xcodegen generate`, open the project, sign in with a free Apple ID under Xcode → Settings → Accounts, and pick your *(Personal Team)* once for both the `SuperRight` and `FinderExt` targets in Signing & Capabilities.
-2. **Local signing config**: `cp Local.xcconfig.example Local.xcconfig` and fill in your Team ID — use the profile's `TeamIdentifier`, **not** the parenthesized value in the certificate name (that's the cert OU):
+1. **One-time GUI step** (FinderSync needs a signed extension): run `xcodegen generate`, open `SuperRight.xcodeproj`, sign in with a free Apple ID under Xcode → Settings → Accounts, and pick your *(Personal Team)* for both the `SuperRight` and `FinderExt` targets in Signing & Capabilities. This creates your first provisioning profile.
+2. **Run the setup script** — it auto-detects your Team ID, builds, installs, and enables the extension:
    ```bash
-   security cms -D -i ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*.provisionprofile | plutil -extract TeamIdentifier.0 raw -
+   bash scripts/setup.sh
    ```
-3. **One-shot build + install + enable**:
-   ```bash
-   bash scripts/build-install.sh
-   ```
-   Generates the project → builds → installs to `/Applications` → launches the app → enables the Finder extension → restarts Finder.
-4. **Grant permissions** (first run): enable **SuperRight** under System Settings → Login Items & Extensions → Finder Extensions, and add **SuperRight.app** to Full Disk Access (otherwise protected folders keep prompting).
+   (Under the hood: `scripts/build-install.sh` generates the project → builds → installs to `/Applications` → launches → enables the Finder extension → restarts Finder. You can re-run it anytime to rebuild.)
+3. **Grant permissions** (first run): enable **SuperRight** under System Settings → Login Items & Extensions → Finder Extensions, and add **SuperRight.app** to Full Disk Access (otherwise protected folders keep prompting).
 
 ## Auto-renew (the 7-day expiry)
 
